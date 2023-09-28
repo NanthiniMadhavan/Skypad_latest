@@ -16,7 +16,7 @@ class AllTransactions extends StatefulWidget {
 
 class _AllTransactionsState extends State<AllTransactions> {
   List<List<dynamic>> _expensesPages =
-      []; // List of pages, each containing data
+  []; // List of pages, each containing data
   int currentPage = 0; // Current page index
 
   @override
@@ -39,9 +39,16 @@ class _AllTransactionsState extends State<AllTransactions> {
       Map<String, dynamic> responseData = jsonDecode(response.body);
       List<dynamic> expenses = responseData['expense'];
 
-      // Split expenses into pages with 10 data cells each
-      for (int i = 0; i < expenses.length; i += 12) {
-        _expensesPages.add(expenses.sublist(i, i + 12));
+      _expensesPages.clear(); // Clear the existing pages
+
+      int pageSize = 12; // Number of items per page
+
+      for (int i = 0; i < expenses.length; i += pageSize) {
+        // Calculate the end index for the sublist
+        int endIndex = (i + pageSize <= expenses.length)
+            ? (i + pageSize)
+            : expenses.length;
+        _expensesPages.add(expenses.sublist(i, endIndex));
       }
 
       setState(() {
@@ -60,9 +67,9 @@ class _AllTransactionsState extends State<AllTransactions> {
 
   @override
   Widget build(BuildContext context) {
-    List<dynamic> currentPageData = _expensesPages.isEmpty
-        ? []
-        : _expensesPages[currentPage]; // Get data for current page
+    List<dynamic> currentPageData =
+    _expensesPages.isEmpty ? [] : _expensesPages[currentPage];
+    ; // Get data for current page
     return Scaffold(
       appBar: AppBar(
         title: Text('All Transactions'),
@@ -81,63 +88,66 @@ class _AllTransactionsState extends State<AllTransactions> {
       ),
       body: ListView(
         children: <Widget>[
-          DataTable(
-            border: TableBorder.all(width: 1, color: Color(0xFF006A6E)),
-            headingRowColor:
-                MaterialStateColor.resolveWith((states) => Color(0xFF006A6E)),
-            columns: [
-              DataColumn(
-                label: Text('Name',
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white)),
-              ),
-              DataColumn(
-                label: Text('Date',
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white)),
-              ),
-              DataColumn(
-                label: Text('Details',
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white)),
-              ),
-            ],
-            rows: currentPageData.isNotEmpty
-                ? currentPageData.map((expense) {
-                    return DataRow(cells: [
-                      DataCell(Text(
-                        expense['name'],
-                        style: TextStyle(color: Colors.white),
-                      )),
-                      DataCell(Text(
-                        expense['date'],
-                        style: TextStyle(color: Colors.white),
-                      )),
-                      DataCell(IconButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ShowmoreExpenses(
-                                expenseDetails: expense,
-                              ),
-                            ),
-                          );
-                        },
-                        icon: Icon(
-                          Icons.remove_red_eye,
-                          color: Colors.orangeAccent,
+          SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: DataTable(
+              border: TableBorder.all(width: 1, color: Color(0xFF006A6E)),
+              headingRowColor:
+              MaterialStateColor.resolveWith((states) => Color(0xFF006A6E)),
+              columns: [
+                DataColumn(
+                  label: Text('Name',
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white)),
+                ),
+                DataColumn(
+                  label: Text('Date',
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white)),
+                ),
+                DataColumn(
+                  label: Text('Details',
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white)),
+                ),
+              ],
+              rows: currentPageData.isNotEmpty
+                  ? currentPageData.map((expense) {
+                return DataRow(cells: [
+                  DataCell(Text(
+                    expense['name'],
+                    style: TextStyle(color: Colors.white),
+                  )),
+                  DataCell(Text(
+                    expense['date'],
+                    style: TextStyle(color: Colors.white),
+                  )),
+                  DataCell(IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ShowmoreExpenses(
+                            expenseDetails: expense,
+                          ),
                         ),
-                      )),
-                    ]);
-                  }).toList()
-                : [], // If _expenses is empty, return an empty list for rows
+                      );
+                    },
+                    icon: Icon(
+                      Icons.remove_red_eye,
+                      color: Colors.orangeAccent,
+                    ),
+                  )),
+                ]);
+              }).toList()
+                  : [], // If _expenses is empty, return an empty list for rows
+            ),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -151,8 +161,8 @@ class _AllTransactionsState extends State<AllTransactions> {
               IconButton(
                 onPressed: currentPage > 0
                     ? () {
-                        goToPage(currentPage - 1);
-                      }
+                  goToPage(currentPage - 1);
+                }
                     : null,
                 icon: Icon(
                   Icons.skip_previous_outlined,
@@ -171,8 +181,8 @@ class _AllTransactionsState extends State<AllTransactions> {
               IconButton(
                 onPressed: currentPage < _expensesPages.length - 1
                     ? () {
-                        goToPage(currentPage + 1);
-                      }
+                  goToPage(currentPage + 1);
+                }
                     : null,
                 icon: Icon(
                   Icons.skip_next_outlined,
